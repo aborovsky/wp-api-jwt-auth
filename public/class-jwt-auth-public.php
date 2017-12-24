@@ -72,10 +72,10 @@ class Jwt_Auth_Public
      */
     public function add_api_routes()
     {
-        register_rest_route($this->namespace, 'token', array(
+        register_rest_route($this->namespace, 'token', [
             'methods' => 'POST',
             'callback' => array($this, 'generate_token'),
-        ));
+        ]);
 
         register_rest_route($this->namespace, 'token/validate', array(
             'methods' => 'POST',
@@ -97,6 +97,19 @@ class Jwt_Auth_Public
 
     public function generate_token_for_user($user)
     {
+        $secret_key = defined('JWT_AUTH_SECRET_KEY') ? JWT_AUTH_SECRET_KEY : false;
+        /** First thing, check the secret key if not exist return a error*/
+        if (!$secret_key) {
+            return new WP_Error(
+                'jwt_auth_bad_config',
+                __('JWT is not configurated properly, please contact the admin', 'wp-api-jwt-auth'),
+                array(
+                    'status' => 403,
+                )
+            );
+        }
+
+
         /** Valid credentials, the user exists create the according Token */
         $issuedAt = time();
         $notBefore = apply_filters('jwt_auth_not_before', $issuedAt, $issuedAt);
